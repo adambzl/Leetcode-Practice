@@ -168,49 +168,6 @@ string convert(string s, int numRows) {
 	}
 }
 
-int myAtoi(string str) {
-	//pro8，字符串转化为整数
-	//reference other's code
-	string::size_type pos = 0;//标识当前遍历位置
-	int result = 0;
-	bool isMinus = false;
-	int temp;//用于指示是否出现溢出
-	bool overflow = false;
-	if (str[pos] == ' ')
-		while (str[pos] == ' ')
-			pos++;
-	//string内部其实仍然是用空字符标识结束，因此这里并没有做越界判断
-	//这未必是一个好方法！
-	//去除前导空格
-	if (str[pos] == '-') {
-		pos++;
-		isMinus = true;
-	}
-	else if (str[pos] == '+') 
-		pos++;
-	while (str[pos] >= '0' && str[pos] <= '9') {
-		//循环的条件处理了非数字字符出现的所有可能情况
-		temp = result;
-		result = result * 10 + (str[pos] - '0');
-		//乘10再相加的处理兼容了带有前导0的情况
-		if (result / 10 != temp) {
-			//判断数字是否溢出
-			overflow = true;
-			break;
-		}
-		pos++;
-	}
-	if (isMinus)
-		if (overflow)
-			return INT_MIN;
-		else
-			return result;
-	else
-		if (overflow)
-			return INT_MAX;
-		else
-			return result;
-}
 
 int reverse(int x) {
 	bool non_negative = true;
@@ -256,4 +213,86 @@ int reverse(int x) {
 	else
 		return -result;
 	
+}
+
+int myAtoi(string str) {
+	//pro8，字符串转化为整数
+	//reference other's code
+	string::size_type pos = 0;//标识当前遍历位置
+	int result = 0;
+	bool isMinus = false;
+	int temp;//用于指示是否出现溢出
+	bool overflow = false;
+	if (str[pos] == ' ')
+		while (str[pos] == ' ')
+			pos++;
+	//string内部其实仍然是用空字符标识结束，因此这里并没有做越界判断
+	//这未必是一个好方法！
+	//去除前导空格
+	if (str[pos] == '-') {
+		pos++;
+		isMinus = true;
+	}
+	else if (str[pos] == '+')
+		pos++;
+	while (str[pos] >= '0' && str[pos] <= '9') {
+		//循环的条件处理了非数字字符出现的所有可能情况
+		temp = result;
+		result = result * 10 + (str[pos] - '0');
+		//乘10再相加的处理兼容了带有前导0的情况
+		if (result / 10 != temp) {
+			//判断数字是否溢出，超过2147483647就会溢出
+			overflow = true;
+			break;
+		}
+		pos++;
+	}
+	if (isMinus)
+		if (overflow)
+			return INT_MIN;
+		else
+			return result;
+	else
+		if (overflow)
+			return INT_MAX;
+		else
+			return result;
+}
+
+bool isPalindrome(int x) {
+	if (x < 0)
+		return false;
+	//负数一定不是回文串
+	int n = 0;
+	for (; static_cast<int>(x / pow(10, n)) != 0; n++);
+	//确定整数的位数
+	for (int i = 0; i < n / 2; i++)
+		if(static_cast<int>(x/pow(10, i)) % 10 != static_cast<int>(x / pow(10, n - 1 - i)) % 10)
+			return false;
+	return true;
+}
+
+bool isMatch(string s, string p) {
+	//从前向后不断递归调用判断
+	if (p.empty()) return s.empty();
+	//字符或正则表达式为空的情况
+
+	bool first_match = (!s.empty() &&
+		(p.at(0) == s.at(0) || p.at(0) == '.'));
+	//first_match标识第一个字符是否匹配
+
+	if (p.size() >= 2 && p.at(1) == '*') {
+		return (isMatch(s, p.substr(2)) ||
+			(first_match && isMatch(s.substr(1), p)));
+	}
+	//p的第二个字符是*而且长度大于等于2
+	//.*或char*匹配0个字符或匹配1个字符
+	//如果匹配0个字符，那么接下来判断s和p.substr(2)
+	//如果匹配1个字符，那么判断first_match的同时，接下来继续判断s.substr(1)和p；这里注意*可以匹配0个字符，因此p不用截断
+
+
+	else
+		return first_match && isMatch(s.substr(1), p.substr(1));
+		//p的第2个字符不是*或者长度为1的情况
+		//这时候直接按照相同的方法比较s.substr(1)和p.substr(1)即可
 }
