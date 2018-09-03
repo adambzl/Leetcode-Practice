@@ -168,6 +168,50 @@ string convert(string s, int numRows) {
 	}
 }
 
+int myAtoi(string str) {
+	//pro8，字符串转化为整数
+	//reference other's code
+	string::size_type pos = 0;//标识当前遍历位置
+	int result = 0;
+	bool isMinus = false;
+	int temp;//用于指示是否出现溢出
+	bool overflow = false;
+	if (str[pos] == ' ')
+		while (str[pos] == ' ')
+			pos++;
+	//string内部其实仍然是用空字符标识结束，因此这里并没有做越界判断
+	//这未必是一个好方法！
+	//去除前导空格
+	if (str[pos] == '-') {
+		pos++;
+		isMinus = true;
+	}
+	else if (str[pos] == '+') 
+		pos++;
+	while (str[pos] >= '0' && str[pos] <= '9') {
+		//循环的条件处理了非数字字符出现的所有可能情况
+		temp = result;
+		result = result * 10 + (str[pos] - '0');
+		//乘10再相加的处理兼容了带有前导0的情况
+		if (result / 10 != temp) {
+			//判断数字是否溢出
+			overflow = true;
+			break;
+		}
+		pos++;
+	}
+	if (isMinus)
+		if (result * (-1) < INT_MIN || overflow)
+			return INT_MIN;
+		else
+			return result;
+	else
+		if (result > INT_MAX || overflow)
+			return INT_MAX;
+		else
+			return result;
+}
+
 int reverse(int x) {
 	bool non_negative = true;
 	if (x == -2147483647 - 1)
