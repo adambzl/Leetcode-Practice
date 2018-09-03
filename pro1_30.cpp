@@ -4,6 +4,7 @@ using std::to_string;
 using std::vector;
 using std::cout;
 using std::endl;
+using std::map;
 
 
 vector<int> twoSum(vector<int>& nums, int target) {
@@ -27,6 +28,12 @@ vector<int> twoSum(vector<int>& nums, int target) {
 	}
 	return result;
 }
+
+struct ListNode {
+	int val;
+	ListNode *next;
+	ListNode(int x) : val(x), next(nullptr) {}
+};
 
 ListNode* addTwoNumbers(ListNode* l1, ListNode* l2) {
 	ListNode *add1 = l1;
