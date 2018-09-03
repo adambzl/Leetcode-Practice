@@ -201,12 +201,12 @@ int myAtoi(string str) {
 		pos++;
 	}
 	if (isMinus)
-		if (result * (-1) < INT_MIN || overflow)
+		if (overflow)
 			return INT_MIN;
 		else
 			return result;
 	else
-		if (result > INT_MAX || overflow)
+		if (overflow)
 			return INT_MAX;
 		else
 			return result;
