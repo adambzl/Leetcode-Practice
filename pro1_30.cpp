@@ -5,6 +5,8 @@ using std::vector;
 using std::cout;
 using std::endl;
 using std::map;
+using std::unordered_map;
+using std::exception;
 
 
 vector<int> twoSum(vector<int>& nums, int target) {
@@ -295,4 +297,122 @@ bool isMatch(string s, string p) {
 		return first_match && isMatch(s.substr(1), p.substr(1));
 		//p的第2个字符不是*或者长度为1的情况
 		//这时候直接按照相同的方法比较s.substr(1)和p.substr(1)即可
+}
+
+int maxArea_my(vector<int>& height) {
+	//算法思路
+	//从左向右和从右向左分别遍历一次
+	//寻找不小于而且距离当前元素最远的元素计算面积
+	//若当前元素小于等于之前已访问元素，则跳过当前元素
+	int max = 0;
+	int record = 0;//记录当前已经访问过的最大元素
+	//从左向右
+	for (int i = 0; i < height.size(); i++) {
+		if (height[i] <= record)
+			continue;
+		else {
+			record = height[i];
+			//从右向左找第一个大于等于height[i]的元素位置
+			for (int j = height.size() - 1; j >= i; j--) {
+				if (height[j] >= height[i]) {
+					int temp = height[i] * (j - i);
+					max = max > temp ? max : temp;
+					break;
+				}
+			}
+		}
+	}
+	record = 0;
+	for (int i = height.size() - 1; i >= 0; i--) {
+		if (height[i] <= record)
+			continue;
+		else {
+			record = height[i];
+			//从左向右找第一个大于等于height[i]的元素位置
+			for (int j = 0; j <= i; j++) {
+				if (height[j] >= height[i]) {
+					int temp = height[i] * (i - j);
+					max = max > temp ? max : temp;
+					break;
+				}
+			}
+		}
+	}
+	return max;
+}
+
+int maxArea(vector<int>& height) {
+	//reference best practice from leetcode
+	int maxArea = 0;
+	for (int i = 0, j = height.size(); i != j;) {
+		int temp = height[i] <= height[j] ? height[i] : height[j];
+		temp = temp * (j - i);
+		maxArea = maxArea >= temp ? maxArea : temp;
+		if (height[i] > height[j])
+			j--;
+		else
+			i++;
+		//如果元素i比j小，那么j向左移动只会让面积更小，因此应该移动i
+	}
+	return maxArea;
+	//左右两边都要考虑的情况一般都可以通过同时移动来简化
+}
+
+string intToRoman(int num) {
+	string result;
+	vector<vector<char>> romans = { {'I', 'V', 'X'}, {'X', 'L', 'C'}, {'C', 'D', 'M'}, {'M', 'M', 'M'} };
+	int n = 3;//标识当前位，从千位开始
+	for (int i = 0; i < 4; i++) {
+		int temp = static_cast<int>(num / pow(10, 3 - i)) % 10;
+		if (temp < 5) {
+			if (temp == 4) {
+				result += romans[n][0];
+				result += romans[n][1];
+			}
+			else
+				result += string(temp, romans[n][0]);	
+		}
+		else {
+			if (temp == 9) {
+				result += romans[n][0];
+				result += romans[n][2];
+			}
+			else {
+				result += romans[n][1];
+				result += string(temp - 5, romans[n][0]);
+			}
+		}
+		n--;
+	}
+	return result;
+}
+
+int romanToInt(string s) {
+	unordered_map<char, int> m = { {'I', 1}, {'V', 5}, {'X', 10}, {'L', 50}, {'C', 100}, {'D', 500}, {'M', 1000} };
+	int result = 0, temp = 0;
+	for (int i = s.size() - 1; i >= 0; i--) {
+		if (m[s[i]] < temp)
+			result += -m[s[i]];
+		else
+			result += m[s[i]];
+		temp = m[s[i]];
+	}
+	return result;
+}
+
+string longestCommonPrefix(vector<string>& strs) {
+	string result;
+	string::size_type pos = 0;
+	if (!strs.size())
+		return result;
+	while (pos != strs[0].size()) {
+		char temp = strs[0][pos];
+		for (auto &str : strs) {
+			if (pos == str.size() || str[pos] != temp)
+				return result;
+		}
+		result += temp;
+		pos++;
+	}
+	return result;
 }
