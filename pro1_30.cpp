@@ -7,7 +7,7 @@ using std::endl;
 using std::map;
 using std::unordered_map;
 using std::exception;
-
+using std::sort;
 
 vector<int> twoSum(vector<int>& nums, int target) {
 	//建立一个哈希表，插入的同时查找互补元素是否存在，将复杂度降为O(n)
@@ -414,5 +414,176 @@ string longestCommonPrefix(vector<string>& strs) {
 		result += temp;
 		pos++;
 	}
+	return result;
+}
+
+vector<vector<int>> threeSum_my(vector<int>& nums) {
+	map<int, unsigned> m_nums;
+	vector<vector<int>> result;
+	bool mark = false;
+	//建立map，O(n)复杂度
+	for (auto &num : nums) {
+		m_nums[num]++;
+		if (m_nums[num] == 3) {
+			if (num == 0)
+				mark = true;
+			m_nums[num] = 2;
+		}
+	}
+	if (mark)
+		result.push_back({ 0, 0, 0 });
+	int target = 0;
+	//两两组合，O(n^2)复杂度
+	for (auto iter = m_nums.cbegin(); iter != m_nums.cend(); iter++) {
+		//a = b或者a != b的情况分别处理
+		if (iter->second == 2 && iter->first != 0) {
+			target = 0 - (iter->first * 2);
+			if (m_nums.find(target) != m_nums.cend())
+				result.push_back({ iter->first, iter->first, target });
+		}
+		if (iter->first > 0)
+			continue;
+		auto temp = iter;
+		for (auto jter = ++temp; jter != m_nums.cend(); jter++) {
+			target = 0 - iter->first - jter->first;
+			auto pos = m_nums.find(target);
+			if (pos != m_nums.cend() && pos->first > jter->first)
+				result.push_back({ iter->first, jter->first, target });
+			//为了避免重复，当三个元素不相等时，第三个元素必须位于前两个元素之后
+			//这里还利用了map键值的有序性
+		}
+	}
+	return result;
+}
+
+vector<vector<int>> threeSum(vector<int>& nums) {
+	//reference best practice from Leetcode
+	//这种组合问题一般都是两边一起操作，要有算法信心
+	vector<vector<int>> result;
+	if (nums.size() < 3)
+		return result;
+	sort(nums.begin(), nums.end());
+	for (vector<int>::size_type i = 0; i < nums.size() - 1; i++) {
+		if (nums[i] > 0)
+			break;
+		//重要的优化！
+		if (i != 0 && nums[i] == nums[i - 1])
+			continue;
+		//对于i，只考察第一次出现的元素以避免重复
+		auto j = i + 1, k = nums.size() - 1;
+		int target = -nums[i];
+		while (j < k) {
+			int sum = nums[j] + nums[k];
+			if (sum < target)
+				j++;
+			else if (sum > target)
+				k--;
+			else {
+				result.push_back({ nums[i], nums[j], nums[k] });
+				j++;
+				k--;
+				//去重
+				while (j < k && nums[j] == nums[j - 1])
+					j++;
+				while (j < k && nums[k] == nums[k + 1])
+					k--;
+			}
+			//根据三个元素和的情况进行调整
+		}
+	}
+	return result;
+}
+
+int threeSumClosest(vector<int>& nums, int target) {
+	sort(nums.begin(), nums.end());
+	int result = 0;
+	int diff = INT_MAX, min_diff = INT_MAX;
+	for (vector<int>::size_type i = 0; i < nums.size(); i++) {
+		int temp = target - nums[i];
+		vector<int>::size_type j = i + 1, k = nums.size() - 1;
+		while (j < k) {
+			int sum = nums[j] + nums[k];
+			diff = temp - sum;
+			//衡量当前的偏差
+			min_diff = min_diff <= abs(diff) ? min_diff : abs(diff);
+			result = min_diff == abs(diff) ? nums[i] + nums[j] + nums[k] : result;
+			if (diff > 0)
+				j++;
+			else if (diff < 0)
+				k--;
+			else
+				return result;
+		}
+	}
+	return result;
+}
+
+void combinations(vector<string> &v, string digits, map<char, vector<string>> &maps) {
+	//类似打印格雷码，递归处理
+	if (digits.size() == 1)
+		for (auto &s : maps[digits[0]])
+			v.push_back(s);
+	else {
+		string::size_type size = digits.size();
+		vector<string> v_temp;
+		//获取前缀数字串的匹配结果
+		combinations(v_temp, digits.substr(0, size - 1), maps);
+		for (auto i = 0; i < v_temp.size(); i++)
+			for (auto j = 0; j < maps[digits[size - 1]].size(); j++)
+				v.push_back(v_temp[i] + maps[digits[size - 1]][j]);
+	}
+	return;
+}
+
+vector<string> letterCombinations(string digits) {
+	vector<string> result;
+	if (digits.size() == 0)
+		return result;
+	map<char, vector<string>> maps = { {'2', {"a", "b", "c"}},{'3', {"d", "e", "f"}},
+	{'4', {"g", "h", "i"}},{'5', {"j", "k", "l"}},{'6', {"m", "n", "o"}},{'7', {"p", "q", "r", "s"}},
+	{'8', {"t", "u", "v"}},{'9', {"w", "x", "y", "z"}} };
+	combinations(result, digits, maps);
+	return result;
+}
+
+vector<vector<int>> fourSum(vector<int>& nums, int target) {
+	//i, j从区间两侧逐渐向中间收紧，k, l在区间中搜索匹配
+	//i, j, k, l的位置都根据和的情况进行变化
+	//与threeSum问题是类似的，复杂度相比于穷举的O(n^4)降为了O(n^3)
+	vector<vector<int>> result;
+	if (nums.size() < 4)
+		return result;
+	sort(nums.begin(), nums.end());
+	vector<int>::size_type i = 0, j, k, l;
+	for (; i != nums.size() - 3; i++) {
+		if (i != 0 && nums[i] == nums[i - 1])
+			continue;
+		for (j = nums.size() - 1; j != i + 2; j--) {
+			if (j != nums.size() - 1 && nums[j] == nums[j + 1])
+				continue;
+			k = i + 1;
+			l = j - 1;
+			int temp = target - nums[i] - nums[j];
+			while (k < l) {
+				int sum = nums[k] + nums[l];
+				if (sum < temp)
+					k++;
+				else if (sum > temp)
+					l--;
+				else {
+					result.push_back({ nums[i], nums[j], nums[k], nums[l] });
+					k++;
+					l--;
+					while (k < l && nums[k] == nums[k - 1])
+						k++;
+					while (k < l && nums[l] == nums[l + 1])
+						l--;
+				}
+			}
+		}
+	}
+	//目前暂时只想到区间穷举这一种方式
+	//调整i或j，注意nums[i] + nums[j]的和与target的大小关系不能用于判断移动i或j
+	//例如：target = 1 nums = -5 -4 0 0 0 5 和指示应该移动j但是这样将错过正确的区间
 	return result;
 }

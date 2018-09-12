@@ -5,8 +5,8 @@ using std::cout;
 using std::endl;
 
 int main() {
-	vector<std::string> strs;
-	cout<<longestCommonPrefix(strs)<<endl;
+	vector<int> nums = { 1, 0, -1, 0, -2, 2 };
+	fourSum(nums, 0);
 	system("pause");
 	return 0;
 }
